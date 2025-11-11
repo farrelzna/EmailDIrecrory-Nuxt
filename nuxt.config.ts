@@ -6,6 +6,19 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['shadcn-nuxt'],
   css: ['~/assets/css/tailwind.css'],
+  
+  components: {
+    dirs: [
+      {
+        path: '~/app/components',
+        pathPrefix: false,
+        extensions: ['.vue'],
+        // Ignore index.ts files to prevent duplicate component names
+        ignore: ['**/index.ts']
+      }
+    ]
+  },
+  
   shadcn: {
     /**
      * Prefix for all the imported component
@@ -15,7 +28,7 @@ export default defineNuxtConfig({
      * Directory that the component lives in.
      * @default "./components/ui"
      */
-    componentDir: './components/ui'
+    componentDir: './app/components/ui'
   },
   vite: {
     plugins: [
