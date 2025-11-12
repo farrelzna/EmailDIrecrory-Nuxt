@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
 import { SlidersHorizontal, Search, X } from 'lucide-vue-next'
 import { useInboxSearchState } from '@/composables/useInboxSearch'
 
@@ -204,26 +205,36 @@ watch(() => globalSearch.value.filters, newVal => {
               <div class="grid grid-cols-2 gap-2 items-end">
                 <div class="col-span-1">
                   <label class="text-xs font-medium">Date Coverage</label>
-                  <select v-model="filters.dateRange" class="mt-1 block w-full rounded-md border bg-background px-2 py-1 text-sm">
-                    <option value="all">All time</option>
-                    <option value="1d">1 day</option>
-                    <option value="7d">7 days</option>
-                    <option value="1m">1 month</option>
-                    <option value="6m">6 months</option>
-                    <option value="custom">Custom</option>
-                  </select>
+                  <Select v-model="filters.dateRange">
+                    <SelectTrigger class="mt-1 w-full h-8 text-sm">
+                      <SelectValue placeholder="All time" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All time</SelectItem>
+                      <SelectItem value="1d">1 day</SelectItem>
+                      <SelectItem value="7d">7 days</SelectItem>
+                      <SelectItem value="1m">1 month</SelectItem>
+                      <SelectItem value="6m">6 months</SelectItem>
+                      <SelectItem value="custom">Custom</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div v-if="filters.dateRange === 'custom'">
                   <Input v-model="filters.customDate" type="date" />
                 </div>
                 <div class="col-span-1">
                   <label class="text-xs font-medium">Browse</label>
-                  <select v-model="filters.scope" class="mt-1 block w-full rounded-md border bg-background px-2 py-1 text-sm">
-                    <option value="all">All Emails</option>
-                    <option value="inbox">Inbox</option>
-                    <option value="starred">Starred</option>
-                    <option value="sent">Sent</option>
-                  </select>
+                  <Select v-model="filters.scope">
+                    <SelectTrigger class="mt-1 w-full h-8 text-sm">
+                      <SelectValue placeholder="Choose scope" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Emails</SelectItem>
+                      <SelectItem value="inbox">Inbox</SelectItem>
+                      <SelectItem value="starred">Starred</SelectItem>
+                      <SelectItem value="sent">Sent</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>
