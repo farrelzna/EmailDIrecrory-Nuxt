@@ -3,21 +3,14 @@
     <!-- Main Content -->
     <div class="flex-1 overflow-hidden">
       <div class="container h-full py-6">
-        <div class="grid h-full gap-6 lg:grid-cols-[280px_1fr_400px] md:grid-cols-[240px_1fr]">
-          <!-- Sidebar -->
-          <aside class="hidden md:block">
-            <InboxSidebar
-              :active-folder="activeFolder"
-              @change-folder="changeFolder"
-            />
-          </aside>
-
+        <div :class="['grid h-full min-h-0 gap-6', showDetail ? 'lg:grid-cols-[1fr_400px]' : 'lg:grid-cols-1']">
           <!-- Mail List -->
-          <section class="flex flex-col min-w-0">
+          <section class="flex flex-col min-w-0 min-h-0">
             <InboxMailList
-              :emails="filteredEmails"
+              :emails="displayEmails"
               :selected-id="selectedEmail?.id"
               :selected-ids="selectedIds"
+              :refreshing="isRefreshing"
               @select="selectEmail"
               @toggle-check="toggleCheck"
               @toggle-star="toggleStar"
@@ -25,16 +18,19 @@
               @archive-selected="archiveSelected"
               @delete-selected="deleteSelected"
               @mark-read-selected="markReadSelected"
+              @tabs-change="onTabsChange"
+              @refresh="onRefresh"
             />
           </section>
 
           <!-- Mail View (Hidden on mobile, shown on large screens) -->
-          <section class="hidden lg:block">
+          <section v-if="showDetail" class="hidden lg:block min-h-0">
             <InboxMailView
-              :email="selectedEmail"
+              :email="selectedEmailDisplay"
               @toggle-star="toggleStar"
               @archive="archiveEmail"
               @delete="deleteEmail"
+              @close="closeDetail"
             />
           </section>
         </div>
@@ -43,70 +39,56 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, computed } from 'vue'
-import type { Ref } from 'vue'
-import InboxSidebar from '@/components/inbox/InboxSidebar.vue'
+<script setup>
+import { ref, computed, nextTick } from 'vue'
 import InboxMailList from '@/components/inbox/InboxMailList.vue'
 import InboxMailView from '@/components/inbox/InboxMailView.vue'
+import { useInboxSearchState, refreshSearch, migrateSearchDefaults } from '@/composables/useInboxSearch'
+import { useActiveFolder } from '@/composables/useInboxState'
+import { formatDayMonth } from '@/lib/utils'
 
-interface Email {
-  id: string
-  sender: string
-  email: string
-  subject: string
-  snippet: string
-  time: string
-  unread: boolean
-  starred: boolean
-  folder: 'inbox' | 'sent' | 'drafts' | 'archive' | 'trash'
-  body: string
-  labels?: string[]
-  attachments?: string[]
-}
 
 // ==================== DUMMY DATA ====================
-const emails: Ref<Email[]> = ref([
+const emails = ref([
   {
     id: '1',
     sender: 'Alice Johnson',
     email: 'alice.johnson@company.com',
     subject: 'Q4 Marketing Strategy Review',
     snippet: 'Hi team, I wanted to share the latest updates on our Q4 marketing strategy...',
-    time: '10:30 AM',
+    datetime: '2025-11-12T10:30:00Z',
     unread: true,
     starred: true,
     folder: 'inbox',
     labels: ['Work'],
     body: `Hi team,
+      I wanted to share the latest updates on our Q4 marketing strategy. We've made significant progress in several key areas:
 
-I wanted to share the latest updates on our Q4 marketing strategy. We've made significant progress in several key areas:
+      1. Social Media Campaign
+        - Increased engagement by 45%
+        - New followers: 12,500
+        - Best performing content: Video tutorials
 
-1. Social Media Campaign
-   - Increased engagement by 45%
-   - New followers: 12,500
-   - Best performing content: Video tutorials
+      2. Email Marketing
+        - Open rate: 28% (up from 22%)
+        - Click-through rate: 5.2%
+        - New automation workflows implemented
 
-2. Email Marketing
-   - Open rate: 28% (up from 22%)
-   - Click-through rate: 5.2%
-   - New automation workflows implemented
+      3. Content Strategy
+        - Published 24 blog posts
+        - SEO improvements ranking for 15 new keywords
+        - Guest posting opportunities identified
 
-3. Content Strategy
-   - Published 24 blog posts
-   - SEO improvements ranking for 15 new keywords
-   - Guest posting opportunities identified
+      Next Steps:
+      - Review budget allocation for paid ads
+      - Plan holiday season campaigns
+      - Finalize influencer partnerships
 
-Next Steps:
-- Review budget allocation for paid ads
-- Plan holiday season campaigns
-- Finalize influencer partnerships
+      Please review the attached deck and share your feedback by EOD Friday.
 
-Please review the attached deck and share your feedback by EOD Friday.
-
-Best regards,
-Alice Johnson
-Marketing Director`,
+      Best regards,
+      Alice Johnson
+      Marketing Director`,
     attachments: ['Q4-Marketing-Strategy.pdf', 'Budget-Overview.xlsx']
   },
   {
@@ -115,10 +97,10 @@ Marketing Director`,
     email: 'notifications@github.com',
     subject: '[farrelzna/EmailDirectory] New release: v2.0.0',
     snippet: 'A new release v2.0.0 is now available with major improvements and bug fixes...',
-    time: 'Yesterday',
+    datetime: '2025-11-11T14:20:00Z',
     unread: false,
     starred: false,
-    folder: 'inbox',
+    folder: 'drafts',
     body: `🎉 Release v2.0.0
 
 What's New:
@@ -155,7 +137,7 @@ Happy coding!
     email: 'bob.smith@techcorp.com',
     subject: 'Re: Project Timeline Discussion',
     snippet: 'Thanks for the update! I reviewed the timeline and have a few suggestions...',
-    time: 'Nov 9',
+    datetime: '2025-11-09T08:15:00Z',
     unread: false,
     starred: true,
     folder: 'inbox',
@@ -188,7 +170,7 @@ Senior Project Manager`
     email: 'marketing@company.com',
     subject: 'Weekly Newsletter - November 2025',
     snippet: 'This week\'s highlights: New product launch, customer success stories, and upcoming events...',
-    time: 'Nov 8',
+    datetime: '2025-11-08T12:00:00Z',
     unread: false,
     starred: false,
     folder: 'inbox',
@@ -231,7 +213,7 @@ Have a great week!
     email: 'sarah.williams@design.studio',
     subject: 'UI Design Feedback - Inbox Redesign',
     snippet: 'Hey! I have completed the first iteration of the inbox redesign. Would love your thoughts...',
-    time: 'Nov 7',
+    datetime: '2025-11-07T16:45:00Z',
     unread: false,
     starred: false,
     folder: 'inbox',
@@ -275,7 +257,7 @@ Lead UI/UX Designer`,
     email: 'support@helpdesk.com',
     subject: '[Resolved] Ticket #12845 - Login Issue',
     snippet: 'Good news! Your support ticket has been resolved. Here is what we did...',
-    time: 'Nov 6',
+    datetime: '2025-11-06T09:10:00Z',
     unread: false,
     starred: false,
     folder: 'inbox',
@@ -321,10 +303,11 @@ help@helpdesk.com`
     email: 'notifications@linkedin.com',
     subject: 'You appeared in 45 searches this week',
     snippet: 'Your profile is getting noticed! See who has been viewing your profile...',
-    time: 'Nov 5',
+    datetime: '2025-11-05T18:05:00Z',
     unread: false,
     starred: false,
     folder: 'inbox',
+    labels: ['Social'],
     body: `Hi there,
 
 Your profile is getting noticed! 👀
@@ -364,7 +347,7 @@ The LinkedIn Team`
     email: 'finance@company.com',
     subject: 'Expense Report Approved - October 2025',
     snippet: 'Your expense report for October has been approved. Total amount: $1,245.80...',
-    time: 'Nov 4',
+    datetime: '2025-11-04T07:55:00Z',
     unread: false,
     starred: false,
     folder: 'inbox',
@@ -405,29 +388,119 @@ Finance Department`
   }
 ])
 
-const activeFolder: Ref<string> = ref('inbox')
-const selectedEmail: Ref<Email | null> = ref(emails.value[0] || null)
-const selectedIds: Ref<Set<string>> = ref(new Set())
+const activeFolder = useActiveFolder()
+const selectedEmail = ref(emails.value[0] || null)
+const selectedIds = ref(new Set())
+const showDetail = ref(true)
+const inboxSearch = useInboxSearchState()
+migrateSearchDefaults()
+const tabFilter = ref('all')
+const isRefreshing = ref(false)
+// -- end state --
 
 // ==================== COMPUTED ====================
+function stripSearchOperators(text = '') {
+  const pattern = /(from:[^\s]+|to:\([^)]*\)|subject:\([^)]*\)|includes:\("[^"]*"\)|has:attachment|-in:chats|in:(all|inbox|starred|sent|drafts|archive|trash))/gi
+  return text.replace(pattern, '').replace(/\s+/g, ' ').trim()
+}
+
 const filteredEmails = computed(() => {
-  if (activeFolder.value === 'starred') {
-    return emails.value.filter(email => email.starred && email.folder !== 'trash')
+  // Determine base set depending on selected scope or active folder
+  let base = emails.value
+  void inboxSearch.value.lastRefresh
+  const scope = inboxSearch.value.filters.scope
+  if (!scope) {
+    // follow active folder
+    if (activeFolder.value === 'starred') {
+      base = base.filter(e => e.starred && e.folder !== 'trash')
+    } else if (activeFolder.value === 'all') {
+      base = base.filter(e => e.folder !== 'trash')
+    } else {
+      base = base.filter(e => e.folder === activeFolder.value)
+    }
+  } else if (scope === 'all') {
+    base = base.filter(e => e.folder !== 'trash')
+  } else if (scope === 'starred') {
+    base = base.filter(e => e.starred && e.folder !== 'trash')
+  } else {
+    base = base.filter(e => e.folder === scope)
   }
-  return emails.value.filter(email => email.folder === activeFolder.value)
+
+  const q = stripSearchOperators(inboxSearch.value.query || '').toLowerCase()
+  const f = inboxSearch.value.filters
+
+  // Apply text query
+  if (q) {
+    base = base.filter(e =>
+      [e.sender, e.email, e.subject, e.snippet].some(v => v?.toLowerCase().includes(q))
+    )
+  }
+
+  // Apply advanced filters
+  if (f.from.trim()) {
+    const s = f.from.toLowerCase()
+    base = base.filter(e => e.sender.toLowerCase().includes(s) || e.email.toLowerCase().includes(s))
+  }
+  if (f.subject.trim()) {
+    const s = f.subject.toLowerCase()
+    base = base.filter(e => e.subject.toLowerCase().includes(s))
+  }
+  if (f.includes.trim()) {
+    const s = f.includes.toLowerCase()
+    base = base.filter(e => `${e.sender} ${e.subject} ${e.snippet}`.toLowerCase().includes(s))
+  }
+  if (f.hasAttachment) {
+    base = base.filter(e => (e.attachments?.length || 0) > 0)
+  }
+
+  // Date filtering: only apply if customDate is set
+  if (f.customDate) {
+    const start = new Date(f.customDate)
+    const end = new Date(start)
+    end.setDate(start.getDate() + 1)
+    base = base.filter(e => {
+      const d = new Date(e.datetime)
+      return d >= start && d < end
+    })
+  }
+
+  // Note: 'to', 'excludeChats', and 'dateRange/customDate' are ignored in mock data
+  // Apply tab-based label filter
+  if (tabFilter.value === 'important') {
+    base = base.filter(e => (e.labels || []).some(l => l.toLowerCase() === 'important'))
+  } else if (tabFilter.value === 'social') {
+    base = base.filter(e => (e.labels || []).some(l => l.toLowerCase() === 'social'))
+  }
+
+  return base
 })
 
+// Add formatted day-month for UI display (e.g., "10 nov")
+const displayEmails = computed(() =>
+  filteredEmails.value.map(e => ({
+    ...e,
+    time: formatDayMonth(e.datetime)
+  }))
+)
+
+const selectedEmailDisplay = computed(() =>
+  selectedEmail.value
+    ? { ...selectedEmail.value, time: formatDayMonth(selectedEmail.value.datetime) }
+    : null
+)
+
 // ==================== METHODS ====================
-function changeFolder(folder: string) {
+function changeFolder(folder) {
   activeFolder.value = folder
   selectedIds.value.clear()
   const firstEmail = filteredEmails.value[0]
   selectedEmail.value = firstEmail || null
 }
 
-function selectEmail(id: string) {
+function selectEmail(id) {
   const found = emails.value.find(e => e.id === id) || null
   selectedEmail.value = found
+  showDetail.value = true
   
   // Mark as read when selected
   if (found && found.unread) {
@@ -435,7 +508,7 @@ function selectEmail(id: string) {
   }
 }
 
-function toggleCheck(id: string) {
+function toggleCheck(id) {
   if (selectedIds.value.has(id)) {
     selectedIds.value.delete(id)
   } else {
@@ -443,7 +516,7 @@ function toggleCheck(id: string) {
   }
 }
 
-function toggleSelectAll(checked: boolean) {
+function toggleSelectAll(checked) {
   if (checked) {
     filteredEmails.value.forEach(email => {
       selectedIds.value.add(email.id)
@@ -453,14 +526,14 @@ function toggleSelectAll(checked: boolean) {
   }
 }
 
-function toggleStar(id: string) {
+function toggleStar(id) {
   const email = emails.value.find(e => e.id === id)
   if (email) {
     email.starred = !email.starred
   }
 }
 
-function deleteEmail(id: string) {
+function deleteEmail(id) {
   const email = emails.value.find(e => e.id === id)
   if (email) {
     email.folder = 'trash'
@@ -473,7 +546,7 @@ function deleteEmail(id: string) {
   }
 }
 
-function archiveEmail(id: string) {
+function archiveEmail(id) {
   const email = emails.value.find(e => e.id === id)
   if (email) {
     email.folder = 'archive'
@@ -507,5 +580,27 @@ function markReadSelected() {
     }
   })
   selectedIds.value.clear()
+}
+
+function onRefresh() {
+  isRefreshing.value = true
+  refreshSearch()
+  // Reset selection to first email to provide visible feedback
+  nextTick(() => {
+    selectedIds.value.clear()
+    const firstEmail = filteredEmails.value[0]
+    selectedEmail.value = firstEmail || null
+  })
+  setTimeout(() => {
+    isRefreshing.value = false
+  }, 400)
+}
+
+function onTabsChange(val) {
+  tabFilter.value = val || 'all'
+}
+
+function closeDetail() {
+  showDetail.value = false
 }
 </script>

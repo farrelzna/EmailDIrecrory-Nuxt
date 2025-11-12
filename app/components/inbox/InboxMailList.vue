@@ -4,10 +4,14 @@
     <InboxHeader
       :selected-count="selectedIds.size"
       :all-selected="allSelected"
+      :refreshing="refreshing"
       @toggle-select-all="$emit('toggle-select-all', $event)"
       @archive-selected="$emit('archive-selected')"
       @delete-selected="$emit('delete-selected')"
       @mark-read-selected="$emit('mark-read-selected')"
+      @search="$emit('search', $event)"
+      @tabs-change="$emit('tabs-change', $event)"
+      @refresh="$emit('refresh')"
     />
 
     <!-- Email List -->
@@ -25,21 +29,7 @@
 
       <!-- Empty State -->
       <div v-if="emails.length === 0" class="flex flex-col items-center justify-center py-16">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="64"
-          height="64"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.5"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="text-muted-foreground mb-4"
-        >
-          <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
-          <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
-        </svg>
+        <Inbox class="text-muted-foreground mb-4" :size="64" />
         <h3 class="text-lg font-semibold">No messages</h3>
         <p class="text-sm text-muted-foreground mt-1">
           Your inbox is empty
@@ -70,10 +60,11 @@ interface Props {
   emails: Email[]
   selectedId?: string | null
   selectedIds: Set<string>
+  refreshing?: boolean
 }
 
 const props = defineProps<Props>()
-defineEmits(['select', 'toggle-check', 'toggle-star', 'toggle-select-all', 'archive-selected', 'delete-selected', 'mark-read-selected'])
+defineEmits(['select', 'toggle-check', 'toggle-star', 'toggle-select-all', 'archive-selected', 'delete-selected', 'mark-read-selected', 'search', 'refresh', 'tabs-change'])
 
 const allSelected = computed(() => {
   return props.emails.length > 0 && props.emails.every(email => props.selectedIds.has(email.id))

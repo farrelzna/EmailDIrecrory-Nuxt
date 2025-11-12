@@ -23,35 +23,16 @@
         class="h-8 w-8"
         @click="$emit('toggle-star', email.id)"
       >
-        <svg
+        <Star
           v-if="email.starred"
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="#eab308"
-          stroke="#eab308"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-        </svg>
-        <svg
+          :size="16"
+          class="text-yellow-500 fill-yellow-500"
+        />
+        <Star
           v-else
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+          :size="16"
           class="opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-        </svg>
+        />
       </Button>
     </div>
 
@@ -116,6 +97,7 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
+import { Star } from 'lucide-vue-next'
 
 interface Email {
   id: string
