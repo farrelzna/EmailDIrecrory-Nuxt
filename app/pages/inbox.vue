@@ -1,11 +1,73 @@
 <template>
   <div class="h-screen flex flex-col bg-background">
+    <!-- Top Header Bar -->
+    <header class="border-b bg-card px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <h1 class="text-lg font-semibold">Gmail Clone</h1>
+        
+        <!-- Global Search -->
+        <div class="relative w-[500px] hidden md:block">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          >
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.3-4.3"></path>
+          </svg>
+          <input
+            type="text"
+            placeholder="Search in mail"
+            class="w-full pl-9 pr-4 py-2 text-sm border rounded-md bg-muted/50 focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+        </div>
+      </div>
+
+      <!-- User Profile -->
+      <div class="flex items-center gap-3">
+        <!-- Settings Button -->
+        <button class="p-2 hover:bg-accent rounded-full transition-colors" title="Settings">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </button>
+
+        <!-- User Avatar -->
+        <button class="flex items-center gap-2 hover:bg-accent px-2 py-1 rounded-lg transition-colors">
+          <Avatar class="h-8 w-8">
+            <AvatarFallback class="bg-primary text-primary-foreground text-sm font-semibold">
+              JD
+            </AvatarFallback>
+          </Avatar>
+          <span class="text-sm font-medium hidden lg:block">John Doe</span>
+        </button>
+      </div>
+    </header>
+
     <!-- Main Content -->
-    <div class="flex-1 overflow-hidden">
-      <div class="container h-full py-6">
+    <div class="flex-1 overflow-hidden p-6">
+      <div class="h-full max-w-[1600px] mx-auto">
         <div class="grid h-full gap-6 lg:grid-cols-[280px_1fr_400px] md:grid-cols-[240px_1fr]">
           <!-- Sidebar -->
-          <aside class="hidden md:block">
+          <aside class="hidden md:flex flex-col overflow-hidden">
             <InboxSidebar
               :active-folder="activeFolder"
               @change-folder="changeFolder"
@@ -13,7 +75,7 @@
           </aside>
 
           <!-- Mail List -->
-          <section class="flex flex-col min-w-0">
+          <section class="flex flex-col overflow-hidden min-w-0">
             <InboxMailList
               :emails="filteredEmails"
               :selected-id="selectedEmail?.id"
@@ -29,7 +91,7 @@
           </section>
 
           <!-- Mail View (Hidden on mobile, shown on large screens) -->
-          <section class="hidden lg:block">
+          <section class="hidden lg:flex flex-col overflow-hidden">
             <InboxMailView
               :email="selectedEmail"
               @toggle-star="toggleStar"
@@ -46,6 +108,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { Ref } from 'vue'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import InboxSidebar from '@/components/inbox/InboxSidebar.vue'
 import InboxMailList from '@/components/inbox/InboxMailList.vue'
 import InboxMailView from '@/components/inbox/InboxMailView.vue'

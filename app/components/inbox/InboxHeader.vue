@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center gap-3 border-b px-4 py-3">
+  <div class="flex items-center gap-3 border-b px-4 py-3 bg-card">
     <!-- Select All Checkbox -->
     <Checkbox
       :checked="allSelected"
@@ -7,24 +7,24 @@
     />
 
     <!-- Bulk Actions (when items selected) -->
-    <div v-if="selectedCount > 0" class="flex flex-1 items-center gap-2">
-      <span class="text-sm font-medium text-muted-foreground">
-        {{ selectedCount }} selected
+    <div v-if="selectedCount > 0" class="flex flex-1 items-center gap-2 bg-primary/10 -mx-4 -my-3 px-4 py-3">
+      <span class="text-sm font-semibold text-primary">
+        {{ selectedCount }} email{{ selectedCount > 1 ? 's' : '' }} selected
       </span>
       
-      <Separator orientation="vertical" class="h-6" />
+      <Separator orientation="vertical" class="h-6 mx-2" />
       
       <div class="flex items-center gap-1">
         <Button
           variant="ghost"
-          size="icon"
+          size="sm"
           @click="$emit('archive-selected')"
-          title="Archive"
+          class="gap-2"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -36,18 +36,19 @@
             <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"></path>
             <path d="M10 12h4"></path>
           </svg>
+          Archive
         </Button>
 
         <Button
           variant="ghost"
-          size="icon"
+          size="sm"
           @click="$emit('delete-selected')"
-          title="Delete"
+          class="gap-2"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -59,18 +60,19 @@
             <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
             <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
           </svg>
+          Delete
         </Button>
 
         <Button
           variant="ghost"
-          size="icon"
+          size="sm"
           @click="$emit('mark-read-selected')"
-          title="Mark as read"
+          class="gap-2"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -81,6 +83,7 @@
             <path d="M21.2 8.4c.5.38.8.97.8 1.6v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10a2 2 0 0 1 .8-1.6l8-6a2 2 0 0 1 2.4 0l8 6Z"></path>
             <path d="m22 10-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 10"></path>
           </svg>
+          Mark Read
         </Button>
       </div>
     </div>
@@ -104,7 +107,7 @@
       </svg>
       <Input
         v-model="searchQuery"
-        placeholder="Search mail..."
+        placeholder="Search in current folder..."
         class="pl-9"
       />
     </div>
@@ -150,7 +153,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Button } from '@/components/ui/button'
+import Button from '@/components/ui/button/Button.vue'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
