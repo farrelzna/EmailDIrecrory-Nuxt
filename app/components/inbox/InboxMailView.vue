@@ -2,7 +2,7 @@
   <div class="flex h-full flex-col rounded-lg border bg-card">
     <div v-if="email" class="flex h-full flex-col">
       <!-- Header Actions -->
-      <div class="flex items-center justify-between border-b px-4 py-3">
+      <div class="flex items-center justify-between border-b px-4 py-3 sticky top-0 z-10 bg-card">
         <h3 class="text-sm font-semibold">Message</h3>
         <div class="flex items-center gap-1">
           <Button
@@ -10,34 +10,8 @@
             size="icon"
             @click="$emit('toggle-star', email.id)"
           >
-            <svg
-              v-if="email.starred"
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="#eab308"
-              stroke="#eab308"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-            </svg>
-            <svg
-              v-else
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-            </svg>
+            <Star v-if="email.starred" :size="18" class="text-yellow-500 fill-yellow-500" />
+            <Star v-else :size="18" />
           </Button>
 
           <Button
@@ -46,21 +20,7 @@
             @click="$emit('archive', email.id)"
             title="Archive"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <rect width="20" height="5" x="2" y="3" rx="1"></rect>
-              <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"></path>
-              <path d="M10 12h4"></path>
-            </svg>
+            <Archive :size="18" />
           </Button>
 
           <Button
@@ -69,21 +29,7 @@
             @click="$emit('delete', email.id)"
             title="Delete"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M3 6h18"></path>
-              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-            </svg>
+            <Trash2 :size="18" />
           </Button>
 
           <Separator orientation="vertical" class="h-6 mx-1" />
@@ -93,27 +39,22 @@
             size="icon"
             title="More"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <circle cx="12" cy="12" r="1"></circle>
-              <circle cx="12" cy="5" r="1"></circle>
-              <circle cx="12" cy="19" r="1"></circle>
-            </svg>
+            <MoreVertical :size="18" />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            title="Close"
+            @click="$emit('close')"
+          >
+            <X :size="18" />
           </Button>
         </div>
       </div>
 
       <!-- Email Content -->
-      <div class="flex-1 overflow-y-auto p-6">
+  <div class="flex-1 overflow-y-auto p-6 min-h-0">
         <!-- Subject -->
         <h2 class="text-2xl font-bold mb-4">{{ email.subject }}</h2>
 
@@ -152,19 +93,7 @@
               size="sm"
               class="gap-2"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
-              </svg>
+              <Paperclip :size="16" />
               {{ attachment }}
             </Button>
           </div>
@@ -173,57 +102,18 @@
         <!-- Reply Actions -->
         <div class="mt-8 pt-6 border-t space-y-3">
           <Button class="w-full gap-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="9 14 4 9 9 4"></polyline>
-              <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
-            </svg>
+            <Reply :size="16" />
             Reply
           </Button>
           
           <div class="grid grid-cols-2 gap-2">
             <Button variant="outline" class="gap-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polyline points="17 11 12 6 7 11"></polyline>
-                <polyline points="17 18 12 13 7 18"></polyline>
-              </svg>
+              <ReplyAll :size="16" />
               Reply All
             </Button>
             
             <Button variant="outline" class="gap-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polyline points="15 14 20 9 15 4"></polyline>
-                <path d="M4 20v-7a4 4 0 0 1 4-4h12"></path>
-              </svg>
+              <Forward :size="16" />
               Forward
             </Button>
           </div>
@@ -234,21 +124,7 @@
     <!-- Empty State -->
     <div v-else class="flex h-full items-center justify-center p-8">
       <div class="text-center">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="80"
-          height="80"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.5"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="mx-auto mb-4 text-muted-foreground"
-        >
-          <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-          <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-        </svg>
+        <Mails class="mx-auto mb-4 text-muted-foreground" :size="80" />
         <h3 class="text-lg font-semibold">No message selected</h3>
         <p class="text-sm text-muted-foreground mt-1">
           Select an email to read
@@ -262,6 +138,7 @@
 import Button from '@/components/ui/button/Button.vue'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
+import { Star, Archive, Trash2, MoreVertical, Paperclip, Reply, ReplyAll, Forward, Mails, X } from 'lucide-vue-next'
 
 interface Email {
   id: string
@@ -281,7 +158,7 @@ interface Props {
 }
 
 defineProps<Props>()
-defineEmits(['toggle-star', 'archive', 'delete'])
+defineEmits(['toggle-star', 'archive', 'delete', 'close'])
 
 function getInitials(name: string): string {
   const parts = name.split(' ')
