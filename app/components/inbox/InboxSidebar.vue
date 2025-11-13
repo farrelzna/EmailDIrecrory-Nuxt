@@ -58,27 +58,17 @@
 import Button from '@/components/ui/button/Button.vue'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Inbox, Star, Send, FileText, Archive, Trash2, Pencil } from 'lucide-vue-next'
+import { Pencil } from 'lucide-vue-next'
+import { FOLDERS, LABELS } from '@/constants'
+import type { FolderType } from '@/types'
 
 interface Props {
-  activeFolder: string
+  activeFolder: FolderType
 }
 
 const props = defineProps<Props>()
 defineEmits(['change-folder'])
 
-const folders = [
-  { id: 'inbox', name: 'Inbox', icon: Inbox, count: 5 },
-  { id: 'starred', name: 'Starred', icon: Star, count: 2 },
-  { id: 'sent', name: 'Sent', icon: Send, count: 0 },
-  { id: 'drafts', name: 'Drafts', icon: FileText, count: 0 },
-  { id: 'archive', name: 'Archive', icon: Archive, count: 0 },
-  { id: 'trash', name: 'Trash', icon: Trash2, count: 0 },
-]
-
-const labels = [
-  { id: 'work', name: 'Work', color: 'bg-blue-500' },
-  { id: 'personal', name: 'Personal', color: 'bg-green-500' },
-  { id: 'important', name: 'Important', color: 'bg-red-500' },
-]
+const folders = FOLDERS
+const labels = LABELS
 </script>

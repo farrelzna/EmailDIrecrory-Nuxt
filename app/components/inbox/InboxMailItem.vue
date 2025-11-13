@@ -8,10 +8,16 @@
     @click="$emit('select', email.id)"
   >
     <!-- Checkbox -->
-    <div @click.stop>
-      <Checkbox
+    <div @click.stop class="flex items-center">
+      <input 
+        type="checkbox"
         :checked="isChecked"
-        @update:checked="() => $emit('toggle-check', email.id)"
+        @change="$emit('toggle-check', email.id)"
+        class="peer h-4 w-4 shrink-0 rounded-sm border border-input shadow-sm transition-colors
+               accent-black
+               focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-400
+               disabled:cursor-not-allowed disabled:opacity-50
+               cursor-pointer"
       />
     </div>
 
@@ -142,54 +148,21 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import Button from '@/components/ui/button/Button.vue'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Star, Archive, Trash2, Mail, MailOpen, Clock } from 'lucide-vue-next'
-
-interface Email {
-  id: string
-  sender: string
-  email: string
-  subject: string
-  snippet: string
-  time: string
-  unread: boolean
-  starred: boolean
-  labels?: string[]
-}
+import { getInitials, getAvatarColor } from '@/lib/utils'
+import type { EmailWithTime } from '@/types'
 
 interface Props {
-  email: Email
+  email: EmailWithTime
   isSelected: boolean
   isChecked: boolean
 }
 
-defineProps<Props>()
-defineEmits(['select', 'toggle-check', 'toggle-star', 'archive', 'delete', 'toggle-read', 'snooze'])
-
-function getInitials(name: string): string {
-  const parts = name.split(' ')
-  return (parts[0]?.[0] || '') + (parts[1]?.[0] || '')
-}
-
-function getAvatarColor(name: string): string {
-  const colors = [
-    'bg-blue-500 text-white',
-    'bg-green-500 text-white',
-    'bg-yellow-500 text-white',
-    'bg-red-500 text-white',
-    'bg-purple-500 text-white',
-    'bg-pink-500 text-white',
-    'bg-indigo-500 text-white',
-    'bg-teal-500 text-white',
-  ]
-  
-  const hash = name.split('').reduce((acc, char) => {
-    return char.charCodeAt(0) + ((acc << 5) - acc)
-  }, 0)
-  
-  return colors[Math.abs(hash) % colors.length] || 'bg-gray-500 text-white'
-}
+const props = defineProps<Props>()
+const emit = defineEmits(['select', 'toggle-check', 'toggle-star', 'archive', 'delete', 'toggle-read', 'snooze'])
 </script>
