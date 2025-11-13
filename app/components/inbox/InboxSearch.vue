@@ -8,6 +8,20 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { SlidersHorizontal, Search, X, Settings } from 'lucide-vue-next'
 import { useInboxSearchState } from '@/composables/useInboxSearch'
 
+// Types
+type FolderType = 'all' | 'inbox' | 'starred' | 'sent' | 'drafts' | 'archive' | 'trash'
+type FiltersShape = {
+  from: string
+  to: string
+  subject: string
+  includes: string
+  customDate: string
+  scope: '' | FolderType
+  hasAttachment?: boolean
+  excludeChats?: boolean
+  dateRange?: string
+}
+
 // Props
 interface Props {
   userName?: string
@@ -28,7 +42,7 @@ const filterOpen = ref(false)
 const globalSearch = useInboxSearchState()
 
 // Local editable filters (start with global values so reopening keeps previous settings)
-const filters = ref({ ...globalSearch.value.filters })
+const filters = ref<FiltersShape>({ ...(globalSearch.value.filters as any) })
 
 // Computed for user profile
 const userInitials = computed(() => {
@@ -49,7 +63,6 @@ function resetFilters() {
     to: '',
     subject: '',
     includes: '',
-    dateRange: '',
     customDate: '',
     scope: '',
     hasAttachment: false,
@@ -81,7 +94,7 @@ function emitSearch() {
   })
   filterOpen.value = false
   // persist to global store for future reopen
-  globalSearch.value.filters = { ...filters.value }
+  globalSearch.value.filters = { ...globalSearch.value.filters, ...filters.value }
 }
 
 function emitState() {
@@ -89,7 +102,7 @@ function emitState() {
     query: searchQuery.value.trim(),
     filters: { ...filters.value }
   })
-  globalSearch.value.filters = { ...filters.value }
+  globalSearch.value.filters = { ...globalSearch.value.filters, ...filters.value }
 }
 
 // Token parsing & sync: keep filters in sync when user edits the query box
@@ -99,7 +112,7 @@ function extractFreeText(text: string) {
 }
 
 function parseTokens(text: string) {
-  const out = {
+  const out: { from: string; to: string; subject: string; includes: string; scope: '' | FolderType } = {
     from: '',
     to: '',
     subject: '',
@@ -117,7 +130,7 @@ function parseTokens(text: string) {
   const mTo = text.match(re.to); if (mTo) out.to = mTo[1] || ''
   const mSub = text.match(re.subject); if (mSub) out.subject = mSub[1] || ''
   const mInc = text.match(re.includes); if (mInc) out.includes = mInc[1] || ''
-  const mScope = text.match(re.scope); if (mScope) out.scope = mScope[1] || ''
+  const mScope = text.match(re.scope); if (mScope) out.scope = (mScope[1] as FolderType)
   return out
 }
 
@@ -130,7 +143,7 @@ function syncFromQuery() {
     to: toks.to || '',
     subject: toks.subject || '',
     includes: toks.includes || '',
-    scope: toks.scope || '',
+    scope: (toks.scope || '') as '' | FolderType,
   }
 }
 
@@ -238,23 +251,8 @@ watch(() => globalSearch.value.filters, newVal => {
                 </div>
                 <div class="grid grid-cols-2 gap-2 items-end">
                   <div class="col-span-1">
-                    <label class="text-xs font-medium">Date Coverage</label>
-                    <Select v-model="filters.dateRange">
-                      <SelectTrigger class="mt-1 w-full h-8 text-sm">
-                        <SelectValue placeholder="All time" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All time</SelectItem>
-                        <SelectItem value="1d">1 day</SelectItem>
-                        <SelectItem value="7d">7 days</SelectItem>
-                        <SelectItem value="1m">1 month</SelectItem>
-                        <SelectItem value="6m">6 months</SelectItem>
-                        <SelectItem value="custom">Custom</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div v-if="filters.dateRange === 'custom'">
-                    <Input v-model="filters.customDate" type="date" />
+                    <label class="text-xs font-medium">Date</label>
+                    <Input v-model="filters.customDate" type="date" class="mt-1" />
                   </div>
                   <div class="col-span-1">
                     <label class="text-xs font-medium">Browse</label>
