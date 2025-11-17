@@ -247,8 +247,7 @@ export function useEmailStore() {
     // Reset selection to first email
     nextTick(() => {
       selectedIds.value = []
-      const firstEmail = filteredEmails.value[0] || null
-      selectedEmail.value = firstEmail
+      selectedEmail.value = null
     })
     
     setTimeout(() => {
