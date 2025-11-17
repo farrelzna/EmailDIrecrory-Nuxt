@@ -12,7 +12,7 @@ import { useActiveFolder } from './useInboxState'
 export function useEmailStore() {
   // State
   const emails = ref<Email[]>([...MOCK_EMAILS])
-  const selectedEmail = ref<Email | null>(emails.value[0] || null)
+  const selectedEmail = ref<Email | null>(null)
   const selectedIds = ref<string[]>([])
   const isRefreshing = ref(false)
   const tabFilter = ref<TabType>('all')

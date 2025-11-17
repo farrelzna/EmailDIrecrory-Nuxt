@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import InboxMailList from '@/components/inbox/InboxMailList.vue'
 import InboxMailView from '@/components/inbox/InboxMailView.vue'
 import { useEmailStore } from '@/composables/useEmailStore'
@@ -54,7 +54,7 @@ import { migrateSearchDefaults } from '@/composables/useInboxSearch'
 const emailStore = useEmailStore()
 
 // Local state
-const showDetail = ref(true)
+const showDetail = ref(false)
 
 // Migrate search defaults on page load
 migrateSearchDefaults()
@@ -63,4 +63,11 @@ migrateSearchDefaults()
 function closeDetail() {
   showDetail.value = false
 }
+
+// Watch for email selection to show detail panel
+watch(() => emailStore.selectedEmail.value, (newEmail) => {
+  if (newEmail) {
+    showDetail.value = true
+  }
+})
 </script>
